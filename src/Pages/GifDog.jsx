@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { useFetch } from "../hooks/useFetch";
-import { LikeAfter, LikeBefore, NextBtn } from "../Components";
+import { LikeAfter, LikeBefore, DownloadBtn } from "../Components";
 import { CgSpinner } from "react-icons/cg";
 
 export const GifDog = () => {
   const [likes, setLikes] = useState(JSON.parse(localStorage.getItem("likes")) || {});
-  const [liked, setLiked] = useState(false);
   const [showLikesOnly, setShowLikesOnly] = useState(false);
 
-  const { urls, increment, isLoading } = useFetch("https://api.thedogapi.com/v1/images/search?limit=20&mime_types=gif&api_key=", "live_LaxTNaqiuVnnA7IXJ2ysXfufGDoqo6T4Z0avwRpEgLhaUzqsZRGMM8XSIkbTPWev")
+  const { urls, isLoading, loaderRef } = useFetch("https://api.thedogapi.com/v1/images/search?limit=20&mime_types=gif&api_key=", "live_LaxTNaqiuVnnA7IXJ2ysXfufGDoqo6T4Z0avwRpEgLhaUzqsZRGMM8XSIkbTPWev")
 
   useEffect(() => {
     localStorage.setItem("likes", JSON.stringify(likes));
@@ -26,30 +25,21 @@ export const GifDog = () => {
 
       <div className="flex flex-wrap justify-center md:justify-start px-2 md:px-16 pt-10 gap-x-2 md:gap-x-4 gap-y-20 md:gap-y-10">
         {
-          !isLoading
-            ?
-            (
-              urls
-                .filter(dogUrl => !showLikesOnly || likes[dogUrl.id])
-                .map(({ id, url }) =>
-                  <div className="relative rounded-xl shadow-md dark:shadow-none" key={id} data-aos="fade-up" data-aos-duration="800" data-aos-once="true">
-                    <img src={url} alt="cat" className="h-96 md:h-full w-72 object-cover rounded-xl" />
-                    <div className="absolute bottom-0 right-0 p-2">
-                      <button onClick={function () { setLikes({ ...likes, [id]: !likes[id] }); setLiked(true) }}>
-                        {
-                          liked & likes[id]
-                            ? <LikeAfter url={url} />
-                            : <LikeBefore url={url} />
-                        }
-                      </button>
-                    </div>
-                  </div>
-                )
-            )
-            :
-            (
-              <div className="pt-4 md:pt-10 mx-auto m-20">
-                <CgSpinner size={90} className="animate-spin mx-auto " />
+          urls
+            .filter(dogUrl => !showLikesOnly || likes[dogUrl.id])
+            .map(({ id, url }) =>
+              <div className="relative rounded-xl shadow-md dark:shadow-none" key={id} data-aos="fade-up" data-aos-duration="800" data-aos-once="true">
+                <img src={url} alt="dog" className="h-96 md:h-full w-72 object-cover rounded-xl" />
+                <div className="absolute bottom-0 right-0 p-2 flex gap-x-1">
+                  <DownloadBtn url={url} />
+                  <button onClick={() => setLikes({ ...likes, [id]: !likes[id] })}>
+                    {
+                      likes[id]
+                        ? <LikeAfter url={url} />
+                        : <LikeBefore url={url} />
+                    }
+                  </button>
+                </div>
               </div>
             )
         }
@@ -60,7 +50,9 @@ export const GifDog = () => {
         </button>
       </div>
 
-      <NextBtn increment={increment} />
+      <div ref={loaderRef} className="h-10 w-full pt-4">
+        {isLoading && <CgSpinner size={50} className="animate-spin mx-auto" />}
+      </div>
     </div>
   )
 }
